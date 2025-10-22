@@ -84,6 +84,7 @@ local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "ResetButton"
 toggleButton.Size = UDim2.new(0, isMobile and 32 or 36, 0, isMobile and 32 or 36)
 toggleButton.Position = isMobile and UDim2.new(1, -40, 0, -45) or UDim2.new(1, -40, 0, -45)
+toggleButton.AnchorPoint = Vector2.new(0, 0)
 toggleButton.BackgroundColor3 = Color3.fromRGB(255, 107, 107)
 toggleButton.BackgroundTransparency = 0
 toggleButton.BorderSizePixel = 0
@@ -118,7 +119,7 @@ labelText.Parent = screenGui
 local tooltip = Instance.new("TextLabel")
 tooltip.Name = "ResetTooltip"
 tooltip.Size = UDim2.new(0, 160, 0, 55)
-tooltip.Position = UDim2.new(1, -170, 0, -5)
+tooltip.Position = UDim2.new(1, -210, 0, -45)
 tooltip.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 tooltip.BackgroundTransparency = 0.1
 tooltip.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -144,6 +145,7 @@ toggleButton.MouseEnter:Connect(function()
     TweenService:Create(toggleButton, tweenInfo, {BackgroundColor3 = Color3.fromRGB(255, 85, 85)}):Play()
     TweenService:Create(stroke, tweenInfo, {Color = Color3.fromRGB(255, 150, 150)}):Play()
     TweenService:Create(labelText, tweenInfo, {TextColor3 = Color3.fromRGB(255, 200, 200)}):Play()
+    tooltip.Visible = true
 end)
 
 toggleButton.MouseLeave:Connect(function()
@@ -151,27 +153,34 @@ toggleButton.MouseLeave:Connect(function()
     TweenService:Create(toggleButton, tweenInfo, {BackgroundColor3 = Color3.fromRGB(255, 107, 107)}):Play()
     TweenService:Create(stroke, tweenInfo, {Color = Color3.fromRGB(255, 200, 200)}):Play()
     TweenService:Create(labelText, tweenInfo, {TextColor3 = Color3.fromRGB(255, 107, 107)}):Play()
+    tooltip.Visible = false
 end)
 
--- Click animation dengan pulse effect
+-- Click animation dengan pulse effect (FIXED - tidak mengubah Position)
 toggleButton.MouseButton1Click:Connect(function()
+    local originalSize = toggleButton.Size
+    local smallerSize = UDim2.new(0, (isMobile and 32 or 36) * 0.9, 0, (isMobile and 32 or 36) * 0.9)
+    
+    -- Animasi mengecil
     local pulseDown = TweenService:Create(
         toggleButton,
         TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-        {Size = UDim2.new(0, isMobile and 29 or 32, 0, isMobile and 29 or 32), Position = UDim2.new(1, -40, 0, -1)}
+        {Size = smallerSize}
     )
     pulseDown:Play()
     
     resetToBasecamp()
     
+    -- Animasi kembali ke ukuran normal dengan bounce
     pulseDown.Completed:Connect(function()
         TweenService:Create(
             toggleButton,
             TweenInfo.new(0.12, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out),
-            {Size = UDim2.new(0, isMobile and 32 or 36, 0, isMobile and 32 or 36), Position = UDim2.new(1, -42, 0, -2)}
+            {Size = originalSize}
         ):Play()
     end)
     
+    -- Flash effect pada stroke
     TweenService:Create(stroke, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), 
         {Color = Color3.fromRGB(255, 255, 255), Thickness = 3}):Play()
     
@@ -180,6 +189,7 @@ toggleButton.MouseButton1Click:Connect(function()
         {Color = Color3.fromRGB(255, 200, 200), Thickness = 2}):Play()
 end)
 
+-- Touch support untuk mobile
 toggleButton.TouchTap:Connect(function()
     resetToBasecamp()
 end)
@@ -187,3 +197,4 @@ end)
 print("✓ Basecamp Reset Script Loaded (CLIENT)!")
 print("✓ Compatible with StatsCore Sequential CP System")
 print("✓ Checkpoint akan di-reset via SERVER")
+print("✓ Button position FIXED - tidak akan berpindah saat diklik")
