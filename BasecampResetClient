@@ -1,18 +1,23 @@
--- ===== CLIENT SCRIPT (StarterGui > LocalScript) =====
--- Letakkan script ini sebagai LocalScript di StarterGui
+--[[
+    Basecamp Reset System - Client Script
+    Author: ItoRenz00
+    Description: GUI system for resetting player to basecamp and checkpoint
+    Compatible with: StatsCore Sequential CP System
+    Place: StarterGui > LocalScript
+]]
 
+-- ===== SERVICES =====
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+-- ===== VARIABLES =====
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
-
--- Detect mobile or PC
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
--- ===== CREATE OR GET REMOTE EVENT =====
+-- ===== REMOTE EVENT SETUP =====
 local resetEvent = ReplicatedStorage:FindFirstChild("ResetCheckpointEvent")
 if not resetEvent then
     resetEvent = Instance.new("RemoteEvent")
@@ -20,51 +25,74 @@ if not resetEvent then
     resetEvent.Parent = ReplicatedStorage
 end
 
--- ===== BASECAMP RESET FUNCTION (Client-side) =====
+-- ===== CONFIGURATION =====
+local Config = {
+    Button = {
+        Size = isMobile and 32 or 36,
+        Position = UDim2.new(1, -40, 0, -45),
+        Colors = {
+            Normal = Color3.fromRGB(255, 107, 107),
+            Hover = Color3.fromRGB(255, 85, 85),
+            Stroke = Color3.fromRGB(255, 200, 200),
+            StrokeHover = Color3.fromRGB(255, 150, 150)
+        }
+    },
+    Label = {
+        Position = isMobile and UDim2.new(1, -49, 0, -15) or UDim2.new(1, -47, 0, -10)
+    },
+    BasecampNames = {"Basecamp", "SpawnLocation", "Base", "Spawn"},
+    DefaultSpawn = Vector3.new(0, 50, 0)
+}
+
+-- ===== FUNCTIONS =====
+
+-- Find basecamp in workspace
+local function findBasecamp()
+    for _, name in ipairs(Config.BasecampNames) do
+        local found = workspace:FindFirstChild(name)
+        if found then return found end
+    end
+    return nil
+end
+
+-- Reset player to basecamp
 local function resetToBasecamp()
     local character = player.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then
-        warn("⚠️ Character tidak ditemukan atau HumanoidRootPart hilang")
+        warn("⚠️ Character not found or HumanoidRootPart missing")
         return
     end
     
-    -- PANGGIL SERVER UNTUK RESET CHECKPOINT
+    -- Fire server event to reset checkpoint
     resetEvent:FireServer("ResetCheckpoint")
     
-    -- Cari basecamp (kompatibel dengan berbagai nama)
-    local basecamp = workspace:FindFirstChild("Basecamp") 
-        or workspace:FindFirstChild("SpawnLocation") 
-        or workspace:FindFirstChild("Base")
-        or workspace:FindFirstChild("Spawn")
+    -- Find and teleport to basecamp
+    local basecamp = findBasecamp()
+    local hrp = character.HumanoidRootPart
     
     if basecamp then
-        local spawnPart = basecamp
-        if not basecamp:IsA("BasePart") then
-            spawnPart = basecamp:FindFirstChildWhichIsA("BasePart", true)
-        end
+        local spawnPart = basecamp:IsA("BasePart") and basecamp or basecamp:FindFirstChildWhichIsA("BasePart", true)
         
         if spawnPart and spawnPart:IsA("BasePart") then
-            local spawnPos = spawnPart.Position + Vector3.new(0, 3, 0)
-            character:MoveTo(spawnPos)
-            print("✓ Reset ke basecamp berhasil!")
+            character:MoveTo(spawnPart.Position + Vector3.new(0, 3, 0))
+            print("✓ Reset to basecamp successful!")
         else
             character:MoveTo(basecamp:GetPivot().Position + Vector3.new(0, 3, 0))
-            print("✓ Reset ke basecamp berhasil (pivot)!")
+            print("✓ Reset to basecamp successful (pivot)!")
         end
     else
-        character:MoveTo(Vector3.new(0, 50, 0))
-        warn("⚠️ Basecamp tidak ditemukan, spawn di default location")
+        character:MoveTo(Config.DefaultSpawn)
+        warn("⚠️ Basecamp not found, spawning at default location")
     end
     
-    -- Reset velocity dan rotation
-    local hrp = character.HumanoidRootPart
+    -- Reset physics
     if hrp then
-        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+        hrp.AssemblyLinearVelocity = Vector3.zero
+        hrp.AssemblyAngularVelocity = Vector3.zero
         hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, hrp.CFrame:ToEulerAnglesYXZ(), 0)
     end
     
-    -- Heal character
+    -- Restore health
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if humanoid then
         humanoid.Health = humanoid.MaxHealth
@@ -72,20 +100,21 @@ local function resetToBasecamp()
     end
 end
 
--- ===== CREATE GUI =====
+-- ===== GUI CREATION =====
+
 local playerGui = player:WaitForChild("PlayerGui")
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "BasecampResetGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Main Button
+-- Main Reset Button
 local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "ResetButton"
-toggleButton.Size = UDim2.new(0, isMobile and 32 or 36, 0, isMobile and 32 or 36)
-toggleButton.Position = isMobile and UDim2.new(1, -40, 0, -45) or UDim2.new(1, -40, 0, -45)
+toggleButton.Size = UDim2.new(0, Config.Button.Size, 0, Config.Button.Size)
+toggleButton.Position = Config.Button.Position
 toggleButton.AnchorPoint = Vector2.new(0, 0)
-toggleButton.BackgroundColor3 = Color3.fromRGB(255, 107, 107)
+toggleButton.BackgroundColor3 = Config.Button.Colors.Normal
 toggleButton.BackgroundTransparency = 0
 toggleButton.BorderSizePixel = 0
 toggleButton.Font = Enum.Font.GothamBold
@@ -94,28 +123,29 @@ toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.Text = "⌂"
 toggleButton.Parent = screenGui
 
+-- Button styling
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = toggleButton
 
 local stroke = Instance.new("UIStroke")
-stroke.Color = Color3.fromRGB(255, 200, 200)
+stroke.Color = Config.Button.Colors.Stroke
 stroke.Thickness = 2
 stroke.Parent = toggleButton
 
--- Label di bawah button
+-- Label below button
 local labelText = Instance.new("TextLabel")
 labelText.Name = "ResetLabel"
 labelText.Size = UDim2.new(0, 50, 0, 15)
-labelText.Position = isMobile and UDim2.new(1, -49, 0, -15) or UDim2.new(1, -47, 0, -10)
+labelText.Position = Config.Label.Position
 labelText.BackgroundTransparency = 1
-labelText.TextColor3 = Color3.fromRGB(255, 107, 107)
+labelText.TextColor3 = Config.Button.Colors.Normal
 labelText.TextSize = 11
 labelText.Font = Enum.Font.GothamBold
 labelText.Text = "RESET"
 labelText.Parent = screenGui
 
--- Tooltip saat hover
+-- Tooltip
 local tooltip = Instance.new("TextLabel")
 tooltip.Name = "ResetTooltip"
 tooltip.Size = UDim2.new(0, 160, 0, 55)
@@ -135,33 +165,35 @@ tooltipCorner.CornerRadius = UDim.new(0, 8)
 tooltipCorner.Parent = tooltip
 
 local tooltipStroke = Instance.new("UIStroke")
-tooltipStroke.Color = Color3.fromRGB(255, 107, 107)
+tooltipStroke.Color = Config.Button.Colors.Normal
 tooltipStroke.Thickness = 1.5
 tooltipStroke.Parent = tooltip
 
--- Hover effect untuk show tooltip
+-- ===== EVENT HANDLERS =====
+
+-- Hover effects
 toggleButton.MouseEnter:Connect(function()
     local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    TweenService:Create(toggleButton, tweenInfo, {BackgroundColor3 = Color3.fromRGB(255, 85, 85)}):Play()
-    TweenService:Create(stroke, tweenInfo, {Color = Color3.fromRGB(255, 150, 150)}):Play()
+    TweenService:Create(toggleButton, tweenInfo, {BackgroundColor3 = Config.Button.Colors.Hover}):Play()
+    TweenService:Create(stroke, tweenInfo, {Color = Config.Button.Colors.StrokeHover}):Play()
     TweenService:Create(labelText, tweenInfo, {TextColor3 = Color3.fromRGB(255, 200, 200)}):Play()
     tooltip.Visible = true
 end)
 
 toggleButton.MouseLeave:Connect(function()
     local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    TweenService:Create(toggleButton, tweenInfo, {BackgroundColor3 = Color3.fromRGB(255, 107, 107)}):Play()
-    TweenService:Create(stroke, tweenInfo, {Color = Color3.fromRGB(255, 200, 200)}):Play()
-    TweenService:Create(labelText, tweenInfo, {TextColor3 = Color3.fromRGB(255, 107, 107)}):Play()
+    TweenService:Create(toggleButton, tweenInfo, {BackgroundColor3 = Config.Button.Colors.Normal}):Play()
+    TweenService:Create(stroke, tweenInfo, {Color = Config.Button.Colors.Stroke}):Play()
+    TweenService:Create(labelText, tweenInfo, {TextColor3 = Config.Button.Colors.Normal}):Play()
     tooltip.Visible = false
 end)
 
--- Click animation dengan pulse effect (FIXED - tidak mengubah Position)
+-- Click animation with pulse effect
 toggleButton.MouseButton1Click:Connect(function()
     local originalSize = toggleButton.Size
-    local smallerSize = UDim2.new(0, (isMobile and 32 or 36) * 0.9, 0, (isMobile and 32 or 36) * 0.9)
+    local smallerSize = UDim2.new(0, Config.Button.Size * 0.9, 0, Config.Button.Size * 0.9)
     
-    -- Animasi mengecil
+    -- Pulse down animation
     local pulseDown = TweenService:Create(
         toggleButton,
         TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
@@ -171,7 +203,7 @@ toggleButton.MouseButton1Click:Connect(function()
     
     resetToBasecamp()
     
-    -- Animasi kembali ke ukuran normal dengan bounce
+    -- Pulse back animation with bounce
     pulseDown.Completed:Connect(function()
         TweenService:Create(
             toggleButton,
@@ -180,21 +212,22 @@ toggleButton.MouseButton1Click:Connect(function()
         ):Play()
     end)
     
-    -- Flash effect pada stroke
+    -- Flash effect on stroke
     TweenService:Create(stroke, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), 
         {Color = Color3.fromRGB(255, 255, 255), Thickness = 3}):Play()
     
-    wait(0.15)
+    task.wait(0.15)
     TweenService:Create(stroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), 
-        {Color = Color3.fromRGB(255, 200, 200), Thickness = 2}):Play()
+        {Color = Config.Button.Colors.Stroke, Thickness = 2}):Play()
 end)
 
--- Touch support untuk mobile
+-- Mobile touch support
 toggleButton.TouchTap:Connect(function()
     resetToBasecamp()
 end)
 
-print("✓ Basecamp Reset Script Loaded (CLIENT)!")
+-- ===== INITIALIZATION =====
+print("✓ Basecamp Reset System Loaded (CLIENT)")
+print("✓ Author: ItoRenz00")
 print("✓ Compatible with StatsCore Sequential CP System")
-print("✓ Checkpoint akan di-reset via SERVER")
-print("✓ Button position FIXED - tidak akan berpindah saat diklik")
+print("✓ Checkpoint will be reset via SERVER")
