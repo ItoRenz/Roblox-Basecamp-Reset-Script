@@ -1,243 +1,235 @@
-# Basecamp Reset System
+# 🏠 Basecamp Reset System
 
-A Roblox checkpoint reset system that allows players to instantly reset their progress and return to basecamp while preserving their permanent achievements.
+A comprehensive checkpoint reset system for Roblox with modern GUI and cross-platform support.
 
-## Features
-
-✨ **Instant Checkpoint Reset** - Reset progression to 0 with one click  
-🏔️ **Summit Preservation** - Summit achievements remain safe and unaffected  
-📱 **Mobile & PC Support** - Works seamlessly on both platforms  
-🎨 **Modern UI** - Elegant button with smooth animations and hover effects  
-⚡ **Lightweight** - Minimal performance impact  
-🔒 **Server-Side Validation** - Secure checkpoint changes via RemoteEvent  
-
-## Installation
-
-### Prerequisites
-- Roblox Studio
-- Basic understanding of Lua scripting
-- Existing leaderstats system (Checkpoint & Summit values)
-
-### Setup Instructions
-
-#### Step 1: Client Script (LocalScript)
-
-1. Open your Roblox game in Studio
-2. Navigate to **StarterGui** in the Explorer panel
-3. Right-click → **Insert Object** → **LocalScript**
-4. Rename to `BasecampResetClient` (optional)
-5. Copy and paste the entire Client Script code
-6. Save (Ctrl+S)
-
-**Location:** `StarterGui → BasecampResetClient (LocalScript)`
-
-#### Step 2: Server Script
-
-1. Navigate to **ServerScriptService** in the Explorer
-2. Right-click → **Insert Object** → **Script** (NOT LocalScript)
-3. Rename to `BasecampResetServer` (optional)
-4. Copy and paste the entire Server Script code
-5. Save
-
-**Location:** `ServerScriptService → BasecampResetServer (Script)`
-
-#### Step 3: Verify Installation
-
-After both scripts are in place, check the Output console:
-
-```
-✓ Checkpoint Reset Server Event Active!
-✓ Listening for reset commands from clients...
-✓ Basecamp Reset Script Loaded (CLIENT)!
-```
-
-## Usage
-
-### In-Game Usage
-
-1. Click **Play** (▶) to start your game
-2. Look for the **⌂** button in the **top-right corner** of your screen
-3. Click (PC) or tap (Mobile) the button to reset
-
-### What Happens on Reset
-
-- ✓ Checkpoint value reset to 0
-- ✓ Summit value preserved (permanent achievement)
-- ✓ Character teleported to Basecamp
-- ✓ Health fully restored
-- ✓ Velocity and rotation reset
-
-## Configuration
-
-### Button Position
-
-Edit this line in the Client Script:
-
-```lua
-local buttonPosition = UDim2.new(1, -42, 0, -2)
-```
-
-- `1, -42` = 42px from the right
-- `0, -2` = 2px from the top
-
-Adjust the negative values to change positioning.
-
-### Button Size
-
-```lua
-local buttonSizeX = isMobile and 32 or 36
-local buttonSizeY = isMobile and 32 or 36
-```
-
-- Mobile: 32×32 pixels
-- PC: 36×36 pixels
-
-Modify the numbers to change button dimensions.
-
-### Button Color
-
-```lua
-toggleButton.BackgroundColor3 = Color3.fromRGB(59, 89, 152)
-```
-
-Replace RGB values (0-255) with your preferred colors.
-
-### Notification Duration
-
-```lua
-showNotification("Your text", 5)  -- 5 seconds
-```
-
-Change the second parameter to adjust how long the notification displays.
-
-## Compatibility
-
-- ✅ Sequential CP System
-- ✅ Summit System
-- ✅ Custom leaderstats variations
-- ✅ Mobile & PC devices
-- ✅ Roblox Studio (all recent versions)
-
-## File Structure
-
-```
-├── README.md
-├── src/
-│   ├── client/
-│   │   └── BasecampResetClient.lua (LocalScript)
-│   └── server/
-│       └── BasecampResetServer.lua (Script)
-└── .gitignore
-```
-
-## Troubleshooting
-
-### Button Not Appearing
-
-- Ensure **LocalScript is in StarterGui**
-- Check Console Output for errors (View → Output)
-- Verify `ResetOnSpawn = false` is set
-
-### Checkpoint Not Resetting
-
-- Ensure **Server Script is in ServerScriptService**
-- Check Server Output for errors
-- Verify leaderstats are created before player spawn
-
-### Teleport Not Working
-
-- Verify Basecamp exists in workspace (check names: Basecamp, SpawnLocation, Base, or Spawn)
-- Ensure Basecamp contains at least one BasePart
-- Check character HumanoidRootPart exists
-
-### Animation Feels Laggy
-
-- Reduce TweenService duration values
-- Disable UIStroke effects if needed
-- Check for other UI elements causing conflicts
-
-## Technical Details
-
-### Communication Flow
-
-```
-Client Click
-    ↓
-FireServer("ResetCheckpoint")
-    ↓
-Server Receives Event
-    ↓
-Reset Checkpoint Value (leaderstats)
-    ↓
-Client Teleports Character
-    ↓
-Reset Character State
-```
-
-### Remote Event
-
-- **Name:** `ResetCheckpointEvent`
-- **Location:** `ReplicatedStorage`
-- **Type:** RemoteEvent
-- **Auto-Created:** Yes (if doesn't exist)
-
-### Supported Checkpoint Names
-
-- Checkpoint
-- CheckPoint
-- checkpoint
-- CHECKPOINT
-
-### Supported Summit Names
-
-- Summit
-- summit
-- SUMMIT
-
-## Performance
-
-- **Memory Usage:** < 2 MB
-- **Network Traffic:** Minimal (only on button click)
-- **UI Rendering:** Optimized animations
-- **Server Load:** Negligible
-
-## Security Notes
-
-- Server-side validation ensures checkpoint changes are legitimate
-- Client cannot modify leaderstats directly
-- All changes are validated on the server
-- RemoteEvent prevents exploits via rate limiting
-
-## Contributing
-
-Feel free to submit issues, fork the repository, and create pull requests for any improvements.
-
-## License
-
-This project is provided as-is for use in Roblox games.
-
-## Credits
-
-Developed for Sequential CP + Summit System compatibility.
-
-## Support
-
-For issues or questions:
-1. Check the Troubleshooting section
-2. Verify installation steps
-3. Check Console Output for error messages
-4. Review script comments for more details
-
-## Changelog
-
-### Version 1.0.0
-- Initial release
-- Client & Server script separation
-- Mobile & PC support
-- Modern UI with animations
-- Full documentation
+**Author:** ItoRenz00
 
 ---
 
-**Last Updated:** 2024  
-**Status:** Stable ✅
+## 📋 Features
+
+### Core Functionality
+- ✅ One-click reset to basecamp/spawn location
+- ✅ Automatic checkpoint reset to 0
+- ✅ Summit progress preservation
+- ✅ Physics reset (velocity & rotation)
+- ✅ Health restoration on teleport
+- ✅ Server-side checkpoint validation
+
+### User Interface
+- 🎨 Modern, animated reset button
+- 🖱️ Smooth hover effects and tooltips
+- 📱 Full mobile touch support
+- 🎯 Responsive design (PC & Mobile)
+- ⚡ Pulse animations on click
+
+### Compatibility
+- 🔗 Works with StatsCore Sequential CP System
+- 🏷️ Supports multiple basecamp naming conventions
+- 📊 Compatible with various checkpoint stat names
+- 🔄 Fallback spawn location if basecamp not found
+
+---
+
+## 🚀 Installation
+
+### Requirements
+- Roblox Studio
+- Basic understanding of Roblox Studio hierarchy
+
+### Setup Steps
+
+1. **Client Script (LocalScript)**
+   - Location: `StarterGui > LocalScript`
+   - Copy the content from `BasecampResetClient.lua`
+   - Paste into a new LocalScript in StarterGui
+
+2. **Server Script**
+   - Location: `ServerScriptService > Script`
+   - Copy the content from `BasecampResetServer.lua`
+   - Paste into a new Script in ServerScriptService
+
+3. **Test the System**
+   - Press Play in Roblox Studio
+   - Look for the reset button (⌂) in the top-right corner
+   - Click to reset to basecamp
+
+---
+
+## 🎮 Usage
+
+### For Players
+1. **Desktop:** Click the home icon (⌂) button in the top-right corner
+2. **Mobile:** Tap the home icon (⌂) button in the top-right corner
+3. **Effect:** You'll be teleported to basecamp with checkpoint reset to 0
+
+### Button Location
+- Desktop: Top-right corner (below typical UI elements)
+- Mobile: Optimized position for thumb reach
+
+---
+
+## ⚙️ Configuration
+
+### Basecamp Names (Auto-detected)
+The system automatically searches for these names in workspace:
+- `Basecamp`
+- `SpawnLocation`
+- `Base`
+- `Spawn`
+
+### Checkpoint Stat Names (Auto-detected)
+The system recognizes these leaderstats names:
+- `Checkpoint`
+- `CheckPoint`
+- `checkpoint`
+- `CHECKPOINT`
+
+### Summit Stat Names (Preserved)
+Summit progress is never reset:
+- `Summit`
+- `summit`
+- `SUMMIT`
+
+### Default Spawn
+If no basecamp is found, players spawn at: `Vector3.new(0, 50, 0)`
+
+---
+
+## 🛠️ Customization
+
+### Button Colors
+Edit `Config.Button.Colors` in the client script:
+```lua
+Colors = {
+    Normal = Color3.fromRGB(255, 107, 107),
+    Hover = Color3.fromRGB(255, 85, 85),
+    Stroke = Color3.fromRGB(255, 200, 200),
+    StrokeHover = Color3.fromRGB(255, 150, 150)
+}
+```
+
+### Button Position
+Edit `Config.Button.Position` in the client script:
+```lua
+Position = UDim2.new(1, -40, 0, -45)
+```
+
+### Button Size
+Edit `Config.Button.Size` in the client script:
+```lua
+Size = isMobile and 32 or 36
+```
+
+---
+
+## 🔧 Technical Details
+
+### Architecture
+- **Client-Server Model:** Uses RemoteEvents for secure communication
+- **Client Script:** Handles UI, animations, and player teleportation
+- **Server Script:** Manages checkpoint stats and validation
+
+### Security
+- ✅ Server-side checkpoint validation
+- ✅ No client-side stat manipulation
+- ✅ Protected against exploits
+
+### Performance
+- ⚡ Optimized TweenService animations
+- 📉 Minimal performance impact
+- 🔄 Efficient event handling
+
+---
+
+## 📊 Compatibility Matrix
+
+| System | Compatible | Notes |
+|--------|-----------|-------|
+| StatsCore Sequential CP | ✅ Yes | Fully integrated |
+| Custom Checkpoint Systems | ✅ Yes | Auto-detects stat names |
+| Mobile Devices | ✅ Yes | Touch support included |
+| PC/Desktop | ✅ Yes | Mouse support included |
+| VR | ⚠️ Untested | Should work (uses standard UI) |
+
+---
+
+## 🐛 Troubleshooting
+
+### Button Not Showing
+- Ensure LocalScript is in `StarterGui`
+- Check if `StarterGui.ResetOnSpawn` is false for persistence
+
+### Checkpoint Not Resetting
+- Verify Server Script is in `ServerScriptService`
+- Check Output for error messages
+- Ensure leaderstats exist with correct names
+
+### Teleport to Wrong Location
+- Add/rename basecamp part in workspace
+- Check if basecamp is a BasePart or Model
+- Verify basecamp position is accessible
+
+### Player Falling Through Ground
+- Increase Y offset in spawn position: `Vector3.new(0, 5, 0)` → `Vector3.new(0, 10, 0)`
+- Ensure basecamp has collision enabled
+
+---
+
+## 📝 Changelog
+
+### Version 1.0.0 (Initial Release)
+- ✨ Modern GUI with animations
+- 🔄 Checkpoint reset functionality
+- 📱 Mobile support
+- 🎨 Hover tooltips
+- ⚡ Pulse click effects
+- 🔒 Server-side validation
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+### Development Guidelines
+1. Maintain code style consistency
+2. Add comments for complex logic
+3. Test on both PC and mobile
+4. Update README for new features
+
+---
+
+## 📄 License
+
+This project is open source and available for use in any Roblox game.
+
+**Author:** ItoRenz00
+
+---
+
+## 💬 Support
+
+For issues, questions, or suggestions:
+- Open an issue on GitHub
+- Contact the author: ItoRenz00
+
+---
+
+## 🌟 Credits
+
+**Created by:** ItoRenz00
+
+**Special Thanks:**
+- Roblox Developer Community
+- StatsCore System Users
+
+---
+
+## 📸 Screenshots
+
+*(Add screenshots of your GUI in action here)*
+
+---
+
+**Made with ❤️ for the Roblox Community**
