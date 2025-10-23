@@ -1,10 +1,23 @@
--- ===== SERVER SCRIPT (ServerScriptService > Script) =====
--- Letakkan script ini sebagai Script (bukan LocalScript) di ServerScriptService
+--[[
+    Basecamp Reset System - Server Script
+    Author: ItoRenz00
+    Description: Server-side handler for checkpoint reset system
+    Compatible with: StatsCore Sequential CP System
+    Place: ServerScriptService > Script
+]]
 
+-- ===== SERVICES =====
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
--- ===== CREATE OR GET REMOTE EVENT =====
+-- ===== CONFIGURATION =====
+local Config = {
+    CheckpointNames = {"Checkpoint", "CheckPoint", "checkpoint", "CHECKPOINT"},
+    SummitNames = {"Summit", "summit", "SUMMIT"},
+    ResetValue = 0
+}
+
+-- ===== REMOTE EVENT SETUP =====
 local resetEvent = ReplicatedStorage:FindFirstChild("ResetCheckpointEvent")
 if not resetEvent then
     resetEvent = Instance.new("RemoteEvent")
@@ -12,37 +25,67 @@ if not resetEvent then
     resetEvent.Parent = ReplicatedStorage
 end
 
--- ===== HANDLE RESET EVENT =====
+-- ===== FUNCTIONS =====
+
+-- Find stat value by multiple possible names
+local function findStat(leaderstats, possibleNames)
+    for _, name in ipairs(possibleNames) do
+        local stat = leaderstats:FindFirstChild(name)
+        if stat and stat:IsA("IntValue") then
+            return stat
+        end
+    end
+    return nil
+end
+
+-- Reset player checkpoint to basecamp
+local function resetPlayerCheckpoint(player)
+    local leaderstats = player:FindFirstChild("leaderstats")
+    if not leaderstats then
+        warn("⚠️ ["..player.Name.."] No leaderstats found")
+        return false
+    end
+    
+    -- Reset Checkpoint to 0
+    local checkpoint = findStat(leaderstats, Config.CheckpointNames)
+    if checkpoint then
+        checkpoint.Value = Config.ResetValue
+        print("✓ ["..player.Name.."] Checkpoint reset to "..Config.ResetValue.." (SERVER)")
+    else
+        warn("⚠️ ["..player.Name.."] Checkpoint stat not found")
+    end
+    
+    -- Keep Summit value (don't reset)
+    local summit = findStat(leaderstats, Config.SummitNames)
+    if summit then
+        print("ℹ️ ["..player.Name.."] Summit preserved: "..summit.Value.." (not reset)")
+    end
+    
+    -- Reset RespawnLocation
+    player.RespawnLocation = nil
+    print("✓ ["..player.Name.."] RespawnLocation reset")
+    
+    return true
+end
+
+-- ===== EVENT HANDLERS =====
+
 resetEvent.OnServerEvent:Connect(function(player, action)
     if action == "ResetCheckpoint" then
-        local leaderstats = player:FindFirstChild("leaderstats")
-        if leaderstats then
-            -- Reset Checkpoint ke 0
-            local checkpoint = leaderstats:FindFirstChild("Checkpoint") 
-                or leaderstats:FindFirstChild("CheckPoint")
-                or leaderstats:FindFirstChild("checkpoint")
-                or leaderstats:FindFirstChild("CHECKPOINT")
-            
-            if checkpoint and checkpoint:IsA("IntValue") then
-                checkpoint.Value = 0
-                print("✓ ["..player.Name.."] Checkpoint direset ke 0 (SERVER)")
-            end
-            
-            -- Summit tetap tersimpan
-            local summit = leaderstats:FindFirstChild("Summit")
-                or leaderstats:FindFirstChild("summit") 
-                or leaderstats:FindFirstChild("SUMMIT")
-            
-            if summit and summit:IsA("IntValue") then
-                print("ℹ️ ["..player.Name.."] Summit tetap: "..summit.Value.." (tidak direset)")
-            end
-        end
+        local success = resetPlayerCheckpoint(player)
         
-        -- Reset RespawnLocation
-        player.RespawnLocation = nil
-        print("✓ ["..player.Name.."] RespawnLocation direset")
+        if success then
+            print("✓ ["..player.Name.."] Reset operation completed successfully")
+        else
+            warn("⚠️ ["..player.Name.."] Reset operation failed")
+        end
+    else
+        warn("⚠️ ["..player.Name.."] Unknown action: "..tostring(action))
     end
 end)
 
-print("✓ Checkpoint Reset Server Event Active!")
+-- ===== INITIALIZATION =====
+print("✓ Basecamp Reset System Active (SERVER)")
+print("✓ Author: ItoRenz00")
 print("✓ Listening for reset commands from clients...")
+print("✓ Compatible with StatsCore Sequential CP System")
